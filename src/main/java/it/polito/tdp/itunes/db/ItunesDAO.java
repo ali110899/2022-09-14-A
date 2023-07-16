@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import it.polito.tdp.itunes.model.Album;
+import it.polito.tdp.itunes.model.Arco;
 import it.polito.tdp.itunes.model.Artist;
 import it.polito.tdp.itunes.model.Genre;
 import it.polito.tdp.itunes.model.MediaType;
@@ -139,4 +140,63 @@ public class ItunesDAO {
 		}
 		return result;
 	}
+
+	public List<Album> albumConDurata(double durata) {
+		
+		String sql = "SELECT album.*, SUM(track.milliseconds) AS durata "
+				+ "FROM album, track "
+				+ "WHERE album.AlbumId = track.AlbumId "
+				+ "GROUP BY album.AlbumId "
+				+ "HAVING durata>=?";
+		
+		
+		List<Album> result = new LinkedList<>();
+		
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			//Attenzione dobbiamo convertire in millisecondi il parametro passato
+			st.setInt(1, (int)(durata*60*1000));
+			ResultSet res = st.executeQuery();
+
+			while (res.next()) {
+				//Attenzione vogliamo che il valore "durata" sia in minuti --> convertire mill in double
+				result.add(new Album(res.getInt("AlbumId"), res.getString("Title"), res.getDouble("durata")/60/1000));
+			}
+			conn.close();
+			return result;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("SQL Error");
+		}
+	}
+
+	public List<Arco> albumPlaylist() {
+		
+		String sql = "SELECT DISTINCT a1.AlbumId AS a1ID, A2.AlbumId AS a2ID "
+				+ "FROM album a1 , album a2, track t1, track t2, playlisttrack p1, playlisttrack p2 "
+				+ "WHERE a1.AlbumId = t1.AlbumId AND a2.AlbumId = t2.AlbumId "
+				+ "	AND t1.TrackId= p1.TrackId AND t2.TrackId= p2.TrackId "
+				+ "	AND p1.PlaylistId = p2.PlaylistId";
+		
+		List<Arco>  result= new ArrayList<Arco>();
+		
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet res = st.executeQuery();
+
+			while (res.next()) {
+				//Attenzione vogliamo che il valore "durata" sia in minuti --> convertire mill in double
+				Arco arco = new Arco(res.getInt("a1ID"), res.getInt("a2ID"));
+				result.add(arco);
+			}
+			conn.close();
+			return result;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("SQL Error");
+		}
+	}
+	
 }

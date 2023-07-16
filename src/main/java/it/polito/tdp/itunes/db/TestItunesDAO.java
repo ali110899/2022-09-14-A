@@ -3,7 +3,11 @@ package it.polito.tdp.itunes.db;
 public class TestItunesDAO {
 
 	public static void main(String[] args) {
-		/*ItunesDAO dao = new ItunesDAO();
+		ItunesDAO dao = new ItunesDAO();
+		/*
+		System.out.println(dao.albumConDurata(40).size());
+		*/
+		/*
 		System.out.println(dao.getAllAlbums().size());
 		System.out.println(dao.getAllArtists().size());
 		System.out.println(dao.getAllPlaylists().size());

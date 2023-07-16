@@ -5,7 +5,11 @@
 package it.polito.tdp.itunes;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
+
+import it.polito.tdp.itunes.model.Album;
 import it.polito.tdp.itunes.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -34,7 +38,7 @@ public class FXMLController {
     private Button btnSet; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbA1"
-    private ComboBox<?> cmbA1; // Value injected by FXMLLoader
+    private ComboBox<Album> cmbA1; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtDurata"
     private TextField txtDurata; // Value injected by FXMLLoader
@@ -48,16 +52,74 @@ public class FXMLController {
     @FXML
     void doComponente(ActionEvent event) {
     	
+    	Album album = cmbA1.getValue();
+    	
+    	if(album.equals("")) {
+    		txtResult.appendText("Selezionare un album\n");
+    		return;
+    	}
+    	
+    	Set<Album> connessa = model.getComponenteConnessa(album);
+    	double somma=0.0;
+    	for(Album a : connessa) {
+    		somma=somma+a.getDurata();
+    	}
+    	
+    	txtResult.appendText("Dimensione componente: "+connessa.size()+"\n");
+    	txtResult.appendText("Durata totale: "+somma+"\n");
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	
+    	String durata = txtDurata.getText();
+    	
+    	if(durata.equals("")) {
+    		txtResult.appendText("Valore 'd' obbligatorio\n");
+    		return;
+    	}
+    	
+    	Double duration=0.0;
+    	try {
+    		duration= Double.parseDouble(durata);
+    	} catch(NumberFormatException e) {
+    		txtResult.appendText("Inserire come valore 'd' un numero\n");
+    	}
+    	
+    	model.creaGrafo(duration);
+    	
+    	List<Album> album = model.getAlbum();
+    	cmbA1.getItems().clear();
+    	cmbA1.getItems().addAll(album);
     	
     }
 
     @FXML
     void doEstraiSet(ActionEvent event) {
 
+    	Album album = cmbA1.getValue();
+    	
+    	if(album.equals("")) {
+    		txtResult.appendText("Selezionare un album\n");
+    		return;
+    	}
+    	
+    	String dTot = txtX.getText();
+    	if(dTot.equals("")) {
+    		txtResult.appendText("Specificare durata totale\n");
+    		return;
+    	}
+    	
+    	Double dTOT=0.0;
+    	try {
+    		dTOT= Double.parseDouble(dTot);
+    	} catch(NumberFormatException e) {
+    		txtResult.appendText("Inserire un numero\n");
+    	}
+    	
+    	Set<Album>  ottimi = model.ricercaMassimo(album, dTOT);
+    	txtResult.appendText("Ottimi: "+ottimi+"\n");
+    	
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
